@@ -134,6 +134,9 @@ class ProcessFilter():
         themes = request.session.get('themes', [])
         selected_theme = request.GET.get('theme-filter')
 
+        if selected_theme not in themes:
+            return request
+
         for sub_theme in themes[themes.index(selected_theme)+1:]:
             if selected_theme in request.session['filtered_themes']:
                 if selected_theme.count('~') < sub_theme.count('~'):
