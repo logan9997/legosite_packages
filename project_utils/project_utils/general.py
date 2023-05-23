@@ -68,6 +68,7 @@ class General():
             current_page = int(current_page)
         except:
             current_page = 1
+        print(f'\n\n{current_page}\n\n')
         return current_page
 
     def split_capitalize(self, string: str, split_value: str):
