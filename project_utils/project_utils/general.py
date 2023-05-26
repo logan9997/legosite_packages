@@ -27,7 +27,10 @@ class General():
 
     def get_previous_url(self, request) -> str:
         previous_url:str = request.META.get('HTTP_REFERER', '').replace(r'://', '')
-        previous_url = previous_url[previous_url.index('/'):].split('?')[0]
+        print(f'\n\n{previous_url}\n\n')
+        previous_url = previous_url[previous_url.index('/'):]
+        if '?' in previous_url:
+            previous_url = previous_url.split('?')[0]
         return previous_url
 
     def check_slider_range(self, value: int, _list: list):
