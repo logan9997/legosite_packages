@@ -122,6 +122,10 @@ class DatabaseManagement():
             FROM "App_piece"P, "App_pieceparticipation" PP
             WHERE P.piece_id = PP.piece_id
                 AND item_id = '{item_id}'
+                AND P.piece_id NOT IN (
+                    SELECT item_id
+                    FROM "App_item"
+                )
         '''
         return self.SELECT(sql)
 
@@ -340,6 +344,7 @@ class DatabaseManagement():
             
         '''
         result = self.SELECT(sql)
+        print(result)
         return result
 
     def get_sub_themes(self, parent_theme):

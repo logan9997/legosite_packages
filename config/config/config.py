@@ -1,7 +1,5 @@
 import os
 
-ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
-
 # FORMS
 USERNAME_LENGTH = 16
 PASSWORD_LENGTH = 22

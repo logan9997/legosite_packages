@@ -1,1 +1,6 @@
-data_transfer.py
+images/
+sets/
+minifigures/
+.env
+_dump.sql
+local_packages/
