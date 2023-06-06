@@ -3,7 +3,6 @@ import os
 
 from dotenv import load_dotenv
 from project_utils.general import General
-from config.config import ROOT_DIR
 
 
 class Manager():
