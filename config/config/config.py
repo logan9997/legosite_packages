@@ -59,6 +59,11 @@ EXTRA_WORDS = [
     'uniform', 'series', 'detail'
 ]
 
+MISC_VIEWS = [
+    'sorts_and_pages', 'add_to_watchlist', 'entry_item_handler',
+    'logout', 'update_filters_in_session', 'search_item'
+]
+
 
 def get_sort_options() -> list[dict[str, str]]:
     SORT_OPTIONS = [

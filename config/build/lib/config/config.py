@@ -1,7 +1,5 @@
 import os
 
-ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
-
 # FORMS
 USERNAME_LENGTH = 16
 PASSWORD_LENGTH = 22
@@ -59,6 +57,11 @@ EXTRA_WORDS = [
     'female', 'man', 'woman', 'boy', 'girl', 'printed', 'legs', 'arms', 'molded', 'dark',
     'light''markings', 'smooth', 'outfit', 'hair', 'your', 'with', 'part', 'mini', 'pack', 'bundle',
     'uniform', 'series', 'detail'
+]
+
+MISC_VIEWS = [
+    'sorts_and_pages', 'add_to_watchlist', 'entry_item_handler',
+    'logout', 'update_filters_in_session', 'search_item'
 ]
 
 

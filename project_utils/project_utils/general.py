@@ -2,7 +2,7 @@ import math
 import os
 import time
 
-from config.config import PAGE_NUM_LIMIT
+from config.config import PAGE_NUM_LIMIT, MISC_VIEWS
 
 
 def timer(func):
@@ -25,6 +25,10 @@ class General():
 
     def get_previous_url(self, request) -> str:
         previous_url:str = request.META.get('HTTP_REFERER', '')
+
+        for view in MISC_VIEWS:
+            if view in previous_url:
+                previous_url = previous_url.replace(f'/{view}', '')
 
         if previous_url == '':
             return ''
