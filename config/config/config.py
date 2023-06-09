@@ -1,6 +1,3 @@
-import os
-
-# FORMS
 USERNAME_LENGTH = 16
 PASSWORD_LENGTH = 22
 EMAIL_LENGTH = 50
@@ -42,7 +39,16 @@ ITEM_CONDITION_CONVERT = {
 }
 
 REMOVE_CHARS = ['(', ')', ',', '-']
+URL_REMOVE_CHARS = ['[', ']', "'", ' ']
 INVALID_USERNAME_CHARS = []
+
+FILTERS = ['filtered_themes', 'item_type_filter', 'winners_or_losers_filter']
+GET_PARAMS = [
+    'sort-field', 'page', 'slider_start_value', 
+    'slider_end_value', 'graph-metric'
+]
+METRIC_LIMIT_FILTERS = [f'{metric}_{limit}' for limit in ['min', 'max'] for metric in ALL_METRICS]
+
 
 COLOURS = [
     'aqua', 'black', 'blue', 'green', 'orange',
@@ -63,6 +69,7 @@ MISC_VIEWS = [
     'sorts_and_pages', 'add_to_watchlist', 'entry_item_handler',
     'logout', 'update_filters_in_session', 'search_item'
 ]
+
 
 
 def get_sort_options() -> list[dict[str, str]]:

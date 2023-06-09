@@ -2,7 +2,7 @@ import math
 import os
 import time
 
-from config.config import PAGE_NUM_LIMIT, MISC_VIEWS
+from config.config import PAGE_NUM_LIMIT, MISC_VIEWS, URL_REMOVE_CHARS
 
 
 def timer(func):
@@ -26,10 +26,6 @@ class General():
     def get_previous_url(self, request) -> str:
         previous_url:str = request.META.get('HTTP_REFERER', '')
 
-        for view in MISC_VIEWS:
-            if view in previous_url:
-                previous_url = previous_url.replace(f'/{view}', '')
-
         if previous_url == '':
             return ''
 
@@ -41,6 +37,50 @@ class General():
         if '?' in previous_url:
             return previous_url.split('?')[0]
         return previous_url
+    
+    def get_filters_query_string(self, request, params):
+
+        print('PARAMS',params)
+        if 'metric_filters' in params:
+            params.remove('metric_filters')
+
+        query_string = '&'.join([
+            f'{param}={request.session.get(param)}'
+            for param in params if request.session.get(param) not in 
+            [None, '', -1, '-1']
+        ])
+
+        #add metric filters to query string
+        metric_limits = '&'.join([
+            f'{metric}={value}' for metric, value in 
+            request.session.get('metric_filters', {}).items() if 
+            value not in [-1, '-1', None, '']
+        ])
+
+        query_string = query_string + '&' + metric_limits
+
+        query_string = self.remove_chars_from_string(query_string, URL_REMOVE_CHARS)
+        if '?&' in query_string:
+            query_string = query_string.replace('?&', '?')
+        if '&&' in query_string:
+            query_string = query_string.replace('&&', '&')
+
+        return query_string
+
+    def get_sorts_and_pages_query_string(self, request, params):
+        query_string = '&'.join([
+            f'{param}={request.session.get(param)}'
+            for param in params if request.session.get(param) != None
+        ])
+
+        query_string = self.remove_chars_from_string(query_string, URL_REMOVE_CHARS)
+        return query_string
+    
+    def remove_chars_from_string(self, string:str, chars:list[str]) -> str:
+        for char in chars:
+            if char in string:
+                string = string.replace(char, '')
+        return string
 
     def check_slider_range(self, value: int, _list: list):
         if value >= len(_list) - 1:
@@ -156,8 +196,26 @@ class General():
             return []
 
         return num_pages
+    
+    def remove_unused_get_params(self, request, get_params):
+        url = request.get_full_path()
+        if '?' not in url:
+            return request
+        
+        url = url.split('?')[1]
+        params = url.split('&')
+
+        GET_dict = request.GET.copy()
+        for param in params:
+            param_key = param.split('=')[0]
+            if param_key not in get_params and param_key in GET_dict:
+                del GET_dict[param_key]
+
+        request.GET = GET_dict
+        return request
 
     def save_get_params(self, request, params: list[str]):
+        request = self.remove_unused_get_params(request, params)
         for param in params:
             if request.GET.get(param) != None:
                 request.session[param] = request.GET.get(param)
@@ -170,16 +228,34 @@ class General():
                 del request.session[param]
         request.session.modified = True
         return request
+    
+    def get_current_url(self, request) -> str:
+        current_url = request.path
+        for view in MISC_VIEWS:
+            if view in current_url:
+                current_url = current_url.replace(view, '')
+                break
+        return current_url
 
     def process_sorts_and_pages(self, request, params: list[str]):
-        current_url = request.path
+        current_url = self.get_current_url(request)
         previous_url = self.get_previous_url(request)
+
+        previous_url = previous_url.replace('/', '') 
+        current_url = current_url.replace('/', '')
 
         if current_url != previous_url:
             request = self.clear_get_params(request, params)
         request = self.save_get_params(request, params)
         request.session.modified = True
         return request
+    
+    def convert_items_decimal_to_float(self, items):
+        #convert tuples to lists to change last item from decimal.Decimal to float 
+        items = [list(item) for item in items]
+        for item in items:
+            item[-1] = float(item[-1])
+        return items
 
     def large_number_commas(self, number: float) -> str:
         number = str(number)

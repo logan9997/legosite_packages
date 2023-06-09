@@ -1,4 +1,6 @@
 import datetime
+from decimal import Decimal
+from datetime import date
 
 import psycopg2
 from project_utils.environment_manager import Manager
@@ -12,15 +14,19 @@ class DatabaseManagement():
         self.cursor = self.con.cursor()
 
     def SELECT(self, sql, **kwargs):
+
         if kwargs.get('print'):
             print(sql)
         self.cursor.execute(sql)
+
         if kwargs.get('fetchone'):
             return self.cursor.fetchone()
+        
+        result = self.cursor.fetchall()
         if kwargs.get('flat'):
-            return [result[0] for result in self.cursor.fetchall()]
-        return self.cursor.fetchall()
-    
+            result = [col[0] for col in result] 
+
+        return result
     
     def add_pieces(self, info):
         sql = f'''
@@ -240,6 +246,8 @@ class DatabaseManagement():
 
     def filter_items_by_theme(self, themes):
         if themes != []:
+            themes = [f'{theme}' for theme in themes.split(',')] 
+            themes = str(themes).replace("[", "(").replace("]", ")")
             sql = f'''
                 SELECT DISTINCT ON (I.item_id) I.item_id, item_name, theme_path
                 FROM "App_item" I, "App_theme" TH
@@ -247,7 +255,7 @@ class DatabaseManagement():
                     AND I.item_id IN (
                         SELECT item_id
                         FROM "App_theme"
-                        WHERE theme_path IN {str(themes).replace("[", "(").replace("]", ")")}
+                        WHERE theme_path IN {themes}
                     )
                     AND theme_path like 'Star_Wars%'         
             '''
@@ -574,6 +582,9 @@ class DatabaseManagement():
         self.con.commit()
 
     def get_item_graph_info(self, item_id, metric_or_date, **kwargs) -> list[str]:
+        if metric_or_date == 'date':
+            metric_or_date = 'date::varchar'
+
         if kwargs.get("user_id") != -1 and kwargs.get("view", "item") != "item":
             sql = f'''
                 SELECT {metric_or_date}
@@ -624,7 +635,7 @@ class DatabaseManagement():
     def parent_themes(self, user_id: int, view: str, metric: str, **kwargs) -> list[str]:
 
         sql = f'''
-            SELECT theme_path, COUNT(*) ,ROUND(CAST(SUM({metric}) AS numeric), 2)
+            SELECT theme_path, COUNT(*) ,ROUND(CAST(SUM({metric}) AS numeric), 2)::float
             FROM "App_price" P, "App_theme" T, "App_{view}" _view, "App_item" I
             WHERE  theme_path NOT LIKE '%~%'
                 AND (I.item_id, date) = any (
@@ -668,7 +679,7 @@ class DatabaseManagement():
         metric_total_sql = ''
         metric_total = kwargs.get('metric_total')
         if metric_total:
-            metric_total_sql = f',ROUND(CAST(SUM({metric}) AS numeric), 2)'
+            metric_total_sql = f',ROUND(CAST(SUM({metric}) AS numeric), 2)::float'
 
         sql = f'''
             SELECT theme_path {count_sql} {metric_total_sql}
