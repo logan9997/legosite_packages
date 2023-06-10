@@ -58,13 +58,7 @@ class General():
         ])
 
         query_string = query_string + '&' + metric_limits
-
         query_string = self.remove_chars_from_string(query_string, URL_REMOVE_CHARS)
-        if '?&' in query_string:
-            query_string = query_string.replace('?&', '?')
-        if '&&' in query_string:
-            query_string = query_string.replace('&&', '&')
-
         return query_string
 
     def get_sorts_and_pages_query_string(self, request, params):
@@ -74,6 +68,20 @@ class General():
         ])
 
         query_string = self.remove_chars_from_string(query_string, URL_REMOVE_CHARS)
+        return query_string
+    
+    def get_full_query_string(self, request, filters_params, sorts_and_pages_params):
+
+        query_string = self.get_filters_query_string(request, filters_params)
+        query_string = (
+            query_string + '&' + 
+            self.get_sorts_and_pages_query_string(request, sorts_and_pages_params)
+        )
+                
+        if '?&' in query_string:
+            query_string = query_string.replace('?&', '?')
+        if '&&' in query_string:
+            query_string = query_string.replace('&&', '&')
         return query_string
     
     def remove_chars_from_string(self, string:str, chars:list[str]) -> str:
